@@ -7,11 +7,11 @@
 <meta name="description" content="How many BTC medallions can you collect before completing the race?">
 <meta property="og:title" content="ENS Racer - a frENs community driven project">
 <meta property="og:description" content="How many BTC medallions can you collect before completing the race?">
-<meta property="og:image" content="https://ensracer.github.io/game/ens-racer.jpg">
-<meta property="og:url" content="https://ensracer.github.io/game/">
+<meta property="og:image" content="https://www.google.com/image.jpg">
+<meta property="og:url" content="https://yourwebsite.com">
 <meta name="twitter:title" content="ENS Racer - a frENs community driven project">
 <meta name="twitter:description" content="How many BTC medallions can you collect before completing the race?">
-<meta name="twitter:image" content="https://ensracer.github.io/game/ens-racer.jpg>
+<meta name="twitter:image" content="https://www.google.com/image.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <title>ENS Racer - a frENs community driven project</title>
 <meta charset="UTF-8">
@@ -85,8 +85,14 @@ textarea {
   .gold {
     width: 20px;
     height: 20px;
-    background-color: #222;
     background-image: url('btc.png');
+    background-size:cover;
+    position: absolute;
+  }
+  .banana {
+    width: 20px;
+    height: 20px;
+    background-image: url('banana.png');
     background-size:cover;
     position: absolute;
   }
@@ -237,6 +243,28 @@ textarea {
           carRect.left <= goldRect.right
         ) {
           gold.remove();
+          score+=2;
+          scoreElement.textContent = `Score: ${score}`;
+        }
+      });
+
+       const bananas = document.querySelectorAll('.banana');
+      bananas.forEach(banana => {
+        const bananaTop = parseInt(banana.style.top);
+        banana.style.top = bananaTop + 5 + 'px'; // Increase speed
+        if (bananaTop > gameContainer.offsetHeight) {
+          banana.remove();
+        }
+
+        const carRect = car.getBoundingClientRect();
+        const bananaRect = banana.getBoundingClientRect();
+        if (
+          carRect.bottom >= bananaRect.top &&
+          carRect.top <= bananaRect.bottom &&
+          carRect.right >= bananaRect.left &&
+          carRect.left <= bananaRect.right
+        ) {
+          banana.remove();
           score++;
           scoreElement.textContent = `Score: ${score}`;
         }
@@ -285,9 +313,12 @@ textarea {
         if (random < 0.02) {
           const obstacle = createRandomElement('obstacle');
           gameContainer.appendChild(obstacle);
-        } else if (random < 0.04) {
+        } else if (random < 0.03) {
           const gold = createRandomElement('gold');
           gameContainer.appendChild(gold);
+        } else if (random < 0.06) {
+          const banana = createRandomElement('banana');
+          gameContainer.appendChild(banana);
         }
 
         updateGameArea();
