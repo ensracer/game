@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="How many BTC medallions can you collect before completing the race?">
+<meta property="og:title" content="ENS Racer - a frENs community driven project">
+<meta property="og:description" content="How many BTC medallions can you collect before completing the race?">
+<meta property="og:image" content="https://www.google.com/image.jpg">
+<meta property="og:url" content="https://yourwebsite.com">
+<meta name="twitter:title" content="ENS Racer - a frENs community driven project">
+<meta name="twitter:description" content="How many BTC medallions can you collect before completing the race?">
+<meta name="twitter:image" content="https://www.google.com/image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<title>ENS Racer - a frENs community driven project</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+  body {
+    margin: 0;
+    overflow: hidden;
+    font-family:'Press Start 2P';
+    background-color: black;
+  }
+
+  #header {
+	font-family:'Press Start 2P';
+	position: fixed;
+	top:20px;
+	right:20px;
+	color:gold;
+}
+
+#token {
+margin:auto;
+display:block;
+padding-top:100px;
+color:white;
+width:350px;
+}
+
+textarea {
+	width:192px;
+	font-size:20px;
+	  display:inline-block;
+  vertical-align:middle;
+}
+
+  #start-button {
+  	font-family:'Press Start 2P';
+  	background-color: gold;
+  	padding:20px;
+  	margin-top:10px;
+  	margin-left:-1px;
+  	border-style:solid;
+  	border-width:2px;
+  	border-color:black;
+  	width:200px;
+  }
+  #game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background-color: #;
+    background-image: url('road.png');
+  }
+  #car {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 80px;
+    border-color: white;
+    background-image: url('https://i.seadn.io/gcs/files/da94ab37df085c69a6a946c2fd3d43f1.png?auto=format&dpr=1&w=1000');
+    background-size: cover;
+    border-radius:5px;
+    border-width:1px;
+    border-style:solid;
+
+  }
+  .gold {
+    width: 20px;
+    height: 20px;
+    background-color: #222;
+    background-image: url('btc.png');
+    background-size:cover;
+    position: absolute;
+  }
+  .obstacle {
+    width: 20px;
+    height: 20px;
+    background-color: black;
+    position: absolute;
+    border-radius:5px;
+    border-style:solid;
+  }
+  .finish-line {
+    width: 100%;
+    height: 5px;
+    background-color: red;
+    position: absolute;
+    top: -5px;
+    animation: float 5s linear infinite;
+  }
+  #score {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 18px;
+    color: gold;
+    background-color: black;
+    padding: 5px 10px;
+  }
+  @keyframes float {
+    to {
+      top: 100%;
+    }
+  }
+</style>
+<title>Car Racing Game</title>
+</head>
+<body>
+<div id="game-container">
+  <div id="car"></div>
+  <div id="header">ENS Racer
+  <p style="font-size:12px"><a target="_blank" style="color:white" href="https://www.twitter.com/growthpj">By ApeFinder</a></p></div>
+  <div id="score">Score: 0</div>
+  <div id="token"><p>Enter your token id</p><textarea type="number" autocomplete="on" name="token-id" cols="6" rows="1" placeholder="eg: 2352" id="token-id"></textarea><button id="start-button">Start Game</button></div>
+    </div>
+
+    <script>
+      const tokenTextarea = document.getElementById('token-id');
+    const startButton = document.getElementById('start-button');
+
+    // Retrieve stored token ID from Local Storage
+    const storedToken = localStorage.getItem('storedToken');
+    if (storedToken) {
+      tokenTextarea.value = storedToken;
+    }
+    </script>
+
+<audio id="bg-music" loop>
+  <source src="race.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+</div>
+
+<script>
+  async function loadToken() {
+    const apiUrl = "https://metadata.frens.studio/api/"+document.getElementById("token-id").value;
+    const carElement = document.getElementById('car');
+
+    try {
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+
+      if (data && data.image) {
+        const ipfsHash = data.image.replace("ipfs://", "");
+        const finalImageUrl = `https://ipfs.io/ipfs/${ipfsHash}`;
+        carElement.style.backgroundImage = `url(${finalImageUrl})`;
+        console.log('sucess');
+      } else {
+        console.log("Image URL not found in response");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+};
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const gameContainer = document.getElementById('game-container');
+    const car = document.getElementById('car');
+    const scoreElement = document.getElementById('score');
+
+    let score = 0;
+    let gameInterval;
+
+    let carPosition = 50; // Initial position of the car (in percentage)
+    const carSpeed = 4; // Adjust this value to change the car's speed
+
+    function createRandomElement(className) {
+      const element = document.createElement('div');
+      element.className = className;
+      element.style.left = Math.floor(Math.random() * (gameContainer.offsetWidth - 10)) + 'px';
+      element.style.top = '-10px';
+      return element;
+    }
+
+     function createRandomElement2(className) {
+      const element = document.createElement('div');
+      element.className = className;
+      element.style.top = '-10px';
+      return element;
+    }
+
+    function updateGameArea() {
+      const obstacles = document.querySelectorAll('.obstacle');
+      obstacles.forEach(obstacle => {
+        const obstacleTop = parseInt(obstacle.style.top);
+        obstacle.style.top = obstacleTop + 5 + 'px'; // Increase speed
+        if (obstacleTop > gameContainer.offsetHeight) {
+          obstacle.remove();
+        }
+
+        const carRect = car.getBoundingClientRect();
+        const obstacleRect = obstacle.getBoundingClientRect();
+        if (
+          carRect.bottom >= obstacleRect.top &&
+          carRect.top <= obstacleRect.bottom &&
+          carRect.right >= obstacleRect.left &&
+          carRect.left <= obstacleRect.right
+        ) {
+          endGame();
+        }
+      });
+
+      const golds = document.querySelectorAll('.gold');
+      golds.forEach(gold => {
+        const goldTop = parseInt(gold.style.top);
+        gold.style.top = goldTop + 5 + 'px'; // Increase speed
+        if (goldTop > gameContainer.offsetHeight) {
+          gold.remove();
+        }
+
+        const carRect = car.getBoundingClientRect();
+        const goldRect = gold.getBoundingClientRect();
+        if (
+          carRect.bottom >= goldRect.top &&
+          carRect.top <= goldRect.bottom &&
+          carRect.right >= goldRect.left &&
+          carRect.left <= goldRect.right
+        ) {
+          gold.remove();
+          score++;
+          scoreElement.textContent = `Score: ${score}`;
+        }
+      });
+
+      const finishLines = document.querySelectorAll('.finish-line');
+      finishLines.forEach(finishLine => {
+        const finishLineTop = parseInt(finishLine.style.top);
+        finishLine.style.top = finishLineTop + 3 + 'px'; // Increase speed
+        if (finishLineTop > gameContainer.offsetHeight) {
+          finishLine.remove();
+        }
+
+        const carRect = car.getBoundingClientRect();
+        const finishLineRect = finishLine.getBoundingClientRect();
+        if (
+          carRect.bottom >= finishLineRect.top &&
+          carRect.top <= finishLineRect.bottom &&
+          carRect.right >= finishLineRect.left &&
+          carRect.left <= finishLineRect.right
+        ) {
+          endGame(true);
+        }
+      });
+    }
+
+    function endGame(win = false) {
+      clearInterval(gameInterval);
+      if (win) {
+        alert('Congratulations! You reached the finish line!');
+      } else {
+        alert('Game Over. You hit an obstacle.');
+      }
+      location.reload();
+    }
+
+    function startGame() {
+      // Show finish line after 20 seconds
+      setTimeout(() => {
+        const finishLine = createRandomElement2('finish-line');
+        gameContainer.appendChild(finishLine);
+      }, 20000);
+
+      gameInterval = setInterval(() => {
+        const random = Math.random();
+        if (random < 0.02) {
+          const obstacle = createRandomElement('obstacle');
+          gameContainer.appendChild(obstacle);
+        } else if (random < 0.04) {
+          const gold = createRandomElement('gold');
+          gameContainer.appendChild(gold);
+        }
+
+        updateGameArea();
+      }, 10);
+    }
+
+//    startGame();
+
+    // Handle car movement using arrow keys
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'ArrowLeft') {
+        carPosition -= carSpeed;
+      } else if (event.key === 'ArrowRight') {
+        carPosition += carSpeed;
+      }
+
+      // Limit car's position within the game container width
+      carPosition = Math.max(carPosition, 0);
+      carPosition = Math.min(carPosition, 100);
+
+      car.style.left = carPosition + '%';
+    });
+
+
+    const startButton = document.getElementById('start-button');
+    const bgMusic = document.getElementById('bg-music');
+    let musicStarted = false;
+
+    startButton.addEventListener('click', () => {
+      if (!musicStarted) {
+        bgMusic.play();
+        musicStarted = true;
+      }
+
+      const tokenValue = document.getElementById("token-id").value.trim();
+      if (/^[1-9][0-9]{0,3}$|^777[0-6]$/.test(tokenValue)) {
+        startGame();
+        localStorage.setItem('storedToken', tokenValue);
+        loadToken();
+      } else {
+        alert('Please enter a valid token ID between 1 and 7776');
+        location.reload();
+      }
+      startButton.style.display = 'none';
+      document.getElementById("token").style.display = 'none';
+    });
+
+  });
+</script>
+
+
+<script>
+  const numbersOnlyTextarea = document.getElementById('token-id');
+  numbersOnlyTextarea.addEventListener('input', function(event) {
+    const inputValue = event.target.value;
+    const numericValue = inputValue.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+    event.target.value = numericValue;
+  });
+</script>
+</body>
+</html>
