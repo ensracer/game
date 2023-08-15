@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="How many BTC medallions can you collect before completing the race?">
+<meta name="description" content="How many points can you collect before completing the race?">
 <meta property="og:title" content="ENS Racer - a frENs community driven project">
-<meta property="og:description" content="How many BTC medallions can you collect before completing the race?">
-<meta property="og:image" content="https://www.google.com/image.jpg">
+<meta property="og:description" content="How many points can you collect before completing the race?">
+<meta property="og:image" content="https://ensracer.github.io/game/ens-racer.jpg">
 <meta property="og:url" content="https://yourwebsite.com">
 <meta name="twitter:title" content="ENS Racer - a frENs community driven project">
-<meta name="twitter:description" content="How many BTC medallions can you collect before completing the race?">
-<meta name="twitter:image" content="https://www.google.com/image.jpg">
+<meta name="twitter:description" content="How many points can you collect before completing the race?">
+<meta name="twitter:image" content="https://ensracer.github.io/game/ens-racer.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <title>ENS Racer - a frENs community driven project</title>
 <meta charset="UTF-8">
@@ -25,6 +25,14 @@
     font-family:'Press Start 2P';
     background-color: black;
   }
+
+  html, body {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  font-family: 'Press Start 2P';
+  background-color: black;
+}
 
   #header {
 	font-family:'Press Start 2P';
@@ -82,6 +90,13 @@ textarea {
     border-style:solid;
 
   }
+
+/* Media query for mobile devices */
+@media (max-width: 768px) {
+  #car {
+    bottom: 100px; /* Adjust this value as needed */
+  }
+}
   .gold {
     width: 20px;
     height: 20px;
@@ -341,6 +356,38 @@ textarea {
 
       car.style.left = carPosition + '%';
     });
+
+    // Touch event listeners for mobile controls
+let touchStartX = null;
+
+gameContainer.addEventListener('touchstart', function(event) {
+  touchStartX = event.touches[0].clientX;
+});
+
+gameContainer.addEventListener('touchmove', function(event) {
+  if (touchStartX !== null) {
+    const touchX = event.touches[0].clientX;
+    const deltaX = touchX - touchStartX;
+
+    if (deltaX > 10) { // Swipe right
+      carPosition += carSpeed;
+    } else if (deltaX < -10) { // Swipe left
+      carPosition -= carSpeed;
+    }
+
+    // Limit car's position within the game container width
+    carPosition = Math.max(carPosition, 0);
+    carPosition = Math.min(carPosition, 100);
+
+    car.style.left = carPosition + '%';
+
+    touchStartX = touchX;
+  }
+});
+
+gameContainer.addEventListener('touchend', function() {
+  touchStartX = null;
+});
 
 
     const startButton = document.getElementById('start-button');
